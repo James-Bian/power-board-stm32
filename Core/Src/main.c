@@ -20,21 +20,14 @@
 
 /* Includes ------------------------------------------------------------------*/
 
-
 #include "user_app.h"
 #include "user_uart.h"
-
-ADC_HandleTypeDef hadc1;
-ADC_HandleTypeDef hadc2;
-ADC_HandleTypeDef hadc3;
-
-DAC_HandleTypeDef hdac;
+#include "user_adc.h"
+#include "user_time.h"
+#include "user_dac.h"
 
 I2C_HandleTypeDef hi2c1;
 
-TIM_HandleTypeDef htim2;
-TIM_HandleTypeDef htim3;
-TIM_HandleTypeDef htim8;
 
 /**
   * @brief  The application entry point.
@@ -70,10 +63,10 @@ int main(void)
 	//HAL_DAC_SetValue(&hdac,DAC_CHANNEL_1,DAC_ALIGN_12B_R,10);
 	//HAL_DAC_Start(&hdac,DAC_CHANNEL_1);
 	
-	HAL_DAC_SetValue(&hdac,DAC_CHANNEL_2,DAC_ALIGN_12B_R,2300); //2370---0.78V,1300-5V,
-	HAL_DAC_Start(&hdac,DAC_CHANNEL_2);	
+	//HAL_DAC_SetValue(&hdac,DAC_CHANNEL_2,DAC_ALIGN_12B_R,2300); //2370---0.78V,1300-5V,
+	//HAL_DAC_Start(&hdac,DAC_CHANNEL_2);	
 	
-	LOG("hello world\r\n");
+	LOG("Wellcome using power board!\r\n");
 
   while (1)
   {
