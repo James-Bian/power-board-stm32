@@ -21,18 +21,15 @@
 /* Includes ------------------------------------------------------------------*/
 
 #include "user_app.h"
-#include "user_uart.h"
-#include "user_adc.h"
-#include "user_time.h"
-#include "user_dac.h"
 
 I2C_HandleTypeDef hi2c1;
-
 
 /**
   * @brief  The application entry point.
   * @retval int
   */
+extern PowerSettingDef PowerFlashSetting;
+
 int main(void)
 {
 
@@ -65,12 +62,17 @@ int main(void)
 	
 	//HAL_DAC_SetValue(&hdac,DAC_CHANNEL_2,DAC_ALIGN_12B_R,2300); //2370---0.78V,1300-5V,
 	//HAL_DAC_Start(&hdac,DAC_CHANNEL_2);	
-	
+	LOG("HAL Version:%08x \r\n", HAL_GetHalVersion()); 
+	LOG("REVID:%08x \r\n", HAL_GetREVID());
+	LOG("DEVID:%08x \r\n", HAL_GetDEVID());
 	LOG("Wellcome using power board!\r\n");
-
+	
+	LoadFlashSetting(PowerFlashSetting);
+	
   while (1)
   {
-   //printf("hello world\r\n");
+    PowerSettingCheck();
+		PowerMonitor();
   }
 
 }

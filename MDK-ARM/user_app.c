@@ -200,3 +200,113 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+
+uint16_t PowerCmd=0;
+
+PowerSettingDef PowerBasicSetting;
+PowerSettingDef PowerFlashSetting;
+
+ErrorStatus VoltageSetting(uint16_t value)
+{
+	return SUCCESS;
+}
+ErrorStatus CurrentSetting(uint16_t value)
+{
+	return SUCCESS;
+}
+
+ErrorStatus SetDuty(uint16_t duty)
+{
+	return SUCCESS;
+}
+ErrorStatus SetFrequency(uint16_t Freq)
+{
+	return SUCCESS;
+}
+
+
+ErrorStatus SetDelayTime(uint16_t Delaytime)
+{
+	return SUCCESS;
+}
+
+void PowerSet(PowerSettingDef pra )
+{
+ 	if(pra.Status.CVchage!= 0) 
+		{
+			LOG("Set voltage\r\n");
+			VoltageSetting(pra.voltage);       
+			pra.Status.CVchage=0;
+		}
+	if(pra.Status.CCchage!= 0) 
+		{
+			LOG("Set current\r\n");
+			CurrentSetting(pra.Current);       
+			pra.Status.CCchage=0;
+		}
+	if(pra.Status.DutyChage!= 0) 
+		{
+		  LOG("Set Duty\r\n");
+		  SetDuty(pra.Duty);
+  		pra.Status.DutyChage=0;
+		}
+	if(pra.Status.FreqencyChange  != 0)
+		{
+		  LOG("Set Frequency\r\n");
+			SetFrequency(pra.Frequency); 
+		  pra.Status.FreqencyChange=0;
+		}
+	if(pra.Status.DelayTimeChange != 0) 
+		{
+		 LOG("Set Delay time\r\n");
+		 SetDelayTime(pra.DelayTime); 
+		 pra.Status.DelayTimeChange=0;
+		}
+}
+
+ErrorStatus ReadSettingFromFlash(void)
+{
+	LOG("Reading Setting From FLASH\r\n");
+	return SUCCESS;
+}
+
+/*Set setting to Flash*/
+uint8_t SaveSettingToFlash(PowerSettingDef pra)
+{
+	return 0;	
+}
+
+//Check the settings,compare with the Flash setting;
+void PowerSettingCheck(void)
+{
+	if(PowerFlashSetting.Status.CVchage         == 0 ||
+		 PowerFlashSetting.Status.CCchage         == 0 ||
+     PowerFlashSetting.Status.DutyChage       == 0 ||
+		 PowerFlashSetting.Status.FreqencyChange  == 0 ||
+	   PowerFlashSetting.Status.FreqencyChange  == 0   )
+    {
+		 LOG("Setting no change\r\n");
+		}
+	else
+		{			
+			LOG("Save new setting\r\n");
+			SaveSettingToFlash(PowerBasicSetting);
+			ReadSettingFromFlash();
+		}
+}
+
+/*Set the power board with Flash settings*/
+ErrorStatus LoadFlashSetting(PowerSettingDef pra)
+{ 
+	ReadSettingFromFlash();	
+	PowerSet(PowerBasicSetting);
+	return SUCCESS;
+}
+
+void PowerMonitor(void)
+{
+  
+}
+
+
+
