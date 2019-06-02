@@ -6,6 +6,9 @@
 #include "user_adc.h"
 #include "user_dac.h"
 #include "user_time.h"
+#include "stm32f1xx_hal_flash_ex.h"
+#include "stm32f1xx_hal_flash.h"
+
 
 /* Private function prototypes -----------------------------------------------*/
 
@@ -25,7 +28,7 @@ void MX_I2C1_Init(void);
 
 typedef enum 
 {
-  SetVoltage=0,
+  SetVoltage=0x00U,
 	SetCurrent,
 	SetOutputON,
 	SetOutputOFF,
@@ -37,17 +40,17 @@ typedef enum
 
 typedef enum 
 {
-  OutputCh1=0,
+  OutputCh1=0x00U,
 	TriggerOUT1,
 	TriggerOUT2,
 }ChanneNameDef;
 
 
-
 typedef enum
 {
- CV=0,
- CC
+ CV=0x00U,
+ CC,
+ CM
 }WorkMode;
 
 typedef struct
@@ -68,6 +71,8 @@ typedef struct
 	uint16_t Duty;
 	uint16_t Frequency;
 	uint16_t DelayTime;
+	uint16_t OP1offset;
+	uint16_t OP2offset;
 	Statusdef Status;
 }PowerSettingDef;
 
@@ -102,11 +107,11 @@ ErrorStatus    SetDelayTime(uint16_t Delaytime);
 ErrorStatus SetTiggerCmd(uint8_t ch,PowerBoardCMD cmd);
 ErrorStatus SetTiggerOutDelay(uint16_t DelayTime);
 
-void  PowerSet(PowerSettingDef pra );
+void PowerSet(PowerSettingDef pra );
 ErrorStatus ReadSettingFromFlash(void);
-uint8_t     SaveSettingToFlash(PowerSettingDef pra);
+uint8_t SaveSettingToFlash(PowerSettingDef pra);
 void PowerSettingCheck(void);
 ErrorStatus LoadFlashSetting(PowerSettingDef pra);
-void        PowerMonitor(void);
+void PowerMonitor(void);
 
 #endif

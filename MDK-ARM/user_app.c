@@ -206,6 +206,9 @@ uint16_t PowerCmd=0;
 PowerSettingDef PowerBasicSetting;
 PowerSettingDef PowerFlashSetting;
 
+uint32_t FlashSettingData[30]={0,1,2,3,4};
+uint32_t FlashAddress = 0x0803F800;
+
 ErrorStatus VoltageSetting(uint16_t value)
 {
 	return SUCCESS;
@@ -266,13 +269,53 @@ void PowerSet(PowerSettingDef pra )
 
 ErrorStatus ReadSettingFromFlash(void)
 {
+	
 	LOG("Reading Setting From FLASH\r\n");
+	for(uint16_t i=0;i<30;i++)
+		{
+			FlashSettingData[i]=*(__IO uint32_t*)(FlashAddress+8*i);
+			LOG("ReadFlashAddress %08x, %08x\r\n",FlashAddress+8*i,FlashSettingData[i]);
+    }	
 	return SUCCESS;
 }
 
 /*Set setting to Flash*/
 uint8_t SaveSettingToFlash(PowerSettingDef pra)
 {
+	HAL_FLASH_Unlock();  //Unlock Flash;
+	
+	FLASH_EraseInitTypeDef flashdata;  //init Erease data;
+	
+	flashdata.TypeErase = FLASH_TYPEERASE_PAGES;
+	flashdata.PageAddress = FlashAddress;
+	flashdata.NbPages = 1;
+	uint32_t PageError = 0;
+	
+	//Erease Flash
+  HAL_FLASHEx_Erase(&flashdata, &PageError);
+	
+	if(pra.OutputChannel==OutputCh1){
+   for(uint16_t i=0;i<10;i++){
+			HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, FlashAddress+i*8,  (uint64_t)FlashSettingData[i]);
+			LOG("WriteAddress%08x:%08x\r\n",FlashAddress+i*8, *(__IO uint32_t*)(FlashAddress+i*8));
+		}
+	}
+	if(pra.OutputChannel==TriggerOUT1){
+	 for(uint16_t i=10;i<20;i++){
+			HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, FlashAddress+i*8,  (uint64_t)FlashSettingData[i]);
+			LOG("WriteAddress%08x:%08x\r\n",FlashAddress+i*8, *(__IO uint32_t*)(FlashAddress+i*8));
+		}
+	}
+	if(pra.OutputChannel==TriggerOUT2){
+	for(uint16_t i=20;i<30;i++){
+			HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, FlashAddress+i*8,  (uint64_t)FlashSettingData[i]);
+			LOG("WriteAddress%08x:%08x\r\n",FlashAddress+i*8, *(__IO uint32_t*)(FlashAddress+i*8));
+		}
+	}
+
+		
+	HAL_FLASH_Lock();  //lock flash;
+	
 	return 0;	
 }
 
@@ -283,15 +326,15 @@ void PowerSettingCheck(void)
 		 PowerFlashSetting.Status.CCchage         == 0 ||
      PowerFlashSetting.Status.DutyChage       == 0 ||
 		 PowerFlashSetting.Status.FreqencyChange  == 0 ||
-	   PowerFlashSetting.Status.FreqencyChange  == 0   )
-    {
+	   PowerFlashSetting.Status.DelayTimeChange == 0    ){
 		 LOG("Setting no change\r\n");
+		 return;
 		}
-	else
-		{			
-			LOG("Save new setting\r\n");
+	else{			
+			LOG("Start to save new setting\r\n");
 			SaveSettingToFlash(PowerBasicSetting);
 			ReadSettingFromFlash();
+			return;
 		}
 }
 
@@ -299,14 +342,20 @@ void PowerSettingCheck(void)
 ErrorStatus LoadFlashSetting(PowerSettingDef pra)
 { 
 	ReadSettingFromFlash();	
-	PowerSet(PowerBasicSetting);
+	PowerSet(pra);
 	return SUCCESS;
 }
 
 void PowerMonitor(void)
 {
-  
+	if(PowerFlashSetting.mode==CV)
+	{
+	  
+	}
+	else if(PowerFlashSetting.mode==CC)
+	{
+	  
+	}
+	else return;  
 }
-
-
 
