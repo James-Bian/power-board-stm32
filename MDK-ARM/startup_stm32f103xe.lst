@@ -580,9 +580,9 @@ ARM Macro Assembler    Page 9
               00000000 
 Command Line: --debug --xref --cpu=Cortex-M3 --apcs=interwork --depend=.\pwr_so
 ft_advance\startup_stm32f103xe.d -o.\pwr_soft_advance\startup_stm32f103xe.o -I"
-E:\01 Tx controller\software\MDK-ARM\RTE" -Id:\Keil_v5\ARM\PACK\ARM\CMSIS\4.1.0
-\CMSIS\Include --predefine="__MICROLIB SETA 1" --list=startup_stm32f103xe.lst s
-tartup_stm32f103xe.s
+E:\01 VCSEL POWER BOARD\software\MDK-ARM\RTE" -I"D:\Program Files\Keil_v5\ARM\P
+ACK\ARM\CMSIS\4.1.0\CMSIS\Include" --predefine="__MICROLIB SETA 1" --list=start
+up_stm32f103xe.lst startup_stm32f103xe.s
 
 
 

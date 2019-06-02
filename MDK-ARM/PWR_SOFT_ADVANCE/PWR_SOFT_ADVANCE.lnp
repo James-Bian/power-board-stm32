@@ -8,6 +8,7 @@
 ".\pwr_soft_advance\user_adc.o"
 ".\pwr_soft_advance\user_dac.o"
 ".\pwr_soft_advance\user_rs485.o"
+".\pwr_soft_advance\user_time.o"
 ".\pwr_soft_advance\stm32f1xx_hal_gpio_ex.o"
 ".\pwr_soft_advance\stm32f1xx_hal_adc.o"
 ".\pwr_soft_advance\stm32f1xx_hal_adc_ex.o"

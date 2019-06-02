@@ -460,6 +460,11 @@
               <FileType>1</FileType>
               <FilePath>.\user_RS485.c</FilePath>
             </File>
+            <File>
+              <FileName>user_time.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user_time.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
