@@ -55,11 +55,11 @@ typedef enum
 
 typedef struct
 {
-  uint8_t CVchage;
-	uint8_t CCchage;
-	uint8_t DutyChage;
-	uint8_t FreqencyChange;
-	uint8_t DelayTimeChange;
+  uint8_t CVchangeFlag;
+	uint8_t CCchangeFLag;
+	uint8_t DutyChangeFLag;
+	uint8_t FreqencyChangeFLag;
+	uint8_t DelayTimeChangeFLag;
 }Statusdef;
 
 typedef struct
@@ -83,7 +83,7 @@ ErrorStatus LoadDefaultSetting(void);
 ErrorStatus WorkingCmd(PowerBoardCMD cmd);
 
 //CV and CC 
-ErrorStatus VoltageSetting(uint16_t value);
+ErrorStatus VoltageSetting(uint32_t Data);
 ErrorStatus CurrentSetting(uint16_t value);
 uint16_t    GetOutputVol(ChanneNameDef ch);
 uint16_t    GetOutputCur(ChanneNameDef ch);

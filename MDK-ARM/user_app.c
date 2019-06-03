@@ -209,8 +209,31 @@ PowerSettingDef PowerFlashSetting;
 uint32_t FlashSettingData[30]={0,1,2,3,4};
 uint32_t FlashAddress = 0x0803F800;
 
-ErrorStatus VoltageSetting(uint16_t value)
+
+extern DAC_HandleTypeDef hdac;
+#define ADC_FOR_POWER DAC_CHANNEL_2
+
+ErrorStatus VoltageSetting(uint32_t Data)
 {
+	uint32_t value;
+	
+	if(Data<1300){
+		LOG("Unsupport value,to set min value 1300!output is around 5V\r\n");
+		value=1300;	
+	}
+	else if(Data>2370&&Data<2500){
+		LOG("Unsupport value,to set max vlaue 2370,output is around 0.8V\r\n");
+		value=2370;
+	}
+	else if(Data>2500){
+		LOG("Set power off\r\n");// set power off
+	}
+	else {
+		value=Data;
+	}
+	LOG("Set ADC value for power:%d\r\n",value);
+	HAL_DAC_SetValue(&hdac,ADC_FOR_POWER,DAC_ALIGN_12B_R,value); //2370---0.78V,1300-5V,
+	HAL_DAC_Start(&hdac,ADC_FOR_POWER);	
 	return SUCCESS;
 }
 ErrorStatus CurrentSetting(uint16_t value)
@@ -235,46 +258,46 @@ ErrorStatus SetDelayTime(uint16_t Delaytime)
 
 void PowerSet(PowerSettingDef pra )
 {
- 	if(pra.Status.CVchage!= 0) 
+	//VoltageSetting(2300); //for test; 
+ 	if(pra.Status.CVchangeFlag!= 0) 
 		{
 			LOG("Set voltage\r\n");
 			VoltageSetting(pra.voltage);       
-			pra.Status.CVchage=0;
+			pra.Status.CVchangeFlag=0;
 		}
-	if(pra.Status.CCchage!= 0) 
+	if(pra.Status.CCchangeFLag!= 0) 
 		{
 			LOG("Set current\r\n");
 			CurrentSetting(pra.Current);       
-			pra.Status.CCchage=0;
+			pra.Status.CCchangeFLag=0;
 		}
-	if(pra.Status.DutyChage!= 0) 
+	if(pra.Status.DutyChangeFLag!= 0) 
 		{
 		  LOG("Set Duty\r\n");
 		  SetDuty(pra.Duty);
-  		pra.Status.DutyChage=0;
+  		pra.Status.DutyChangeFLag=0;
 		}
-	if(pra.Status.FreqencyChange  != 0)
+	if(pra.Status.FreqencyChangeFLag  != 0)
 		{
 		  LOG("Set Frequency\r\n");
 			SetFrequency(pra.Frequency); 
-		  pra.Status.FreqencyChange=0;
+		  pra.Status.FreqencyChangeFLag=0;
 		}
-	if(pra.Status.DelayTimeChange != 0) 
+	if(pra.Status.DelayTimeChangeFLag != 0) 
 		{
 		 LOG("Set Delay time\r\n");
 		 SetDelayTime(pra.DelayTime); 
-		 pra.Status.DelayTimeChange=0;
+		 pra.Status.DelayTimeChangeFLag=0;
 		}
 }
 
 ErrorStatus ReadSettingFromFlash(void)
-{
-	
+{	
 	LOG("Reading Setting From FLASH\r\n");
 	for(uint16_t i=0;i<30;i++)
 		{
 			FlashSettingData[i]=*(__IO uint32_t*)(FlashAddress+8*i);
-			LOG("ReadFlashAddress %08x, %08x\r\n",FlashAddress+8*i,FlashSettingData[i]);
+			LOG("FlashData %08x\r\n",FlashSettingData[i]);
     }	
 	return SUCCESS;
 }
@@ -312,7 +335,6 @@ uint8_t SaveSettingToFlash(PowerSettingDef pra)
 			LOG("WriteAddress%08x:%08x\r\n",FlashAddress+i*8, *(__IO uint32_t*)(FlashAddress+i*8));
 		}
 	}
-
 		
 	HAL_FLASH_Lock();  //lock flash;
 	
@@ -322,11 +344,11 @@ uint8_t SaveSettingToFlash(PowerSettingDef pra)
 //Check the settings,compare with the Flash setting;
 void PowerSettingCheck(void)
 {
-	if(PowerFlashSetting.Status.CVchage         == 0 ||
-		 PowerFlashSetting.Status.CCchage         == 0 ||
-     PowerFlashSetting.Status.DutyChage       == 0 ||
-		 PowerFlashSetting.Status.FreqencyChange  == 0 ||
-	   PowerFlashSetting.Status.DelayTimeChange == 0    ){
+	if(PowerFlashSetting.Status.CVchangeFlag         == 0 ||
+		 PowerFlashSetting.Status.CCchangeFLag         == 0 ||
+     PowerFlashSetting.Status.DutyChangeFLag       == 0 ||
+		 PowerFlashSetting.Status.FreqencyChangeFLag  == 0 ||
+	   PowerFlashSetting.Status.DelayTimeChangeFLag == 0    ){
 		 LOG("Setting no change\r\n");
 		 return;
 		}

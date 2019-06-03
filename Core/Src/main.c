@@ -28,13 +28,6 @@ int main(void)
   MX_TIM8_Init();
   MX_TIM3_Init();
 	
-	//HAL_TIM_PWM_Start(&htim8,TIM_CHANNEL_3);
-	//HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_1);	
-	//HAL_DAC_SetValue(&hdac,DAC_CHANNEL_1,DAC_ALIGN_12B_R,10);
-	//HAL_DAC_Start(&hdac,DAC_CHANNEL_1);	
-	//HAL_DAC_SetValue(&hdac,DAC_CHANNEL_2,DAC_ALIGN_12B_R,2300); //2370---0.78V,1300-5V,
-	//HAL_DAC_Start(&hdac,DAC_CHANNEL_2);	
-	
 	LOG("HAL Version:%08x \r\n", HAL_GetHalVersion()); 
 	LOG("REVID:%08x \r\n", HAL_GetREVID());
 	LOG("DEVID:%08x \r\n", HAL_GetDEVID());
@@ -49,7 +42,5 @@ int main(void)
   }
 
 }
-
-
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
