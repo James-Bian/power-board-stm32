@@ -3,6 +3,9 @@
 I2C_HandleTypeDef hi2c1;
 
 extern PowerSettingDef PowerFlashSetting;
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim8;
 
 int main(void)
 {
@@ -22,7 +25,7 @@ int main(void)
   MX_ADC3_Init();
   MX_DAC_Init();
   MX_TIM2_Init();
-  MX_I2C1_Init();
+  //MX_I2C1_Init();
   MX_UART4_Init();
   MX_USART1_UART_Init();
   MX_TIM8_Init();
@@ -34,6 +37,9 @@ int main(void)
 	LOG("Wellcome using power board!\r\n");
 	
 	LoadFlashSetting(PowerFlashSetting);
+	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_3);
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
 	
   while (1)
   {

@@ -258,7 +258,7 @@ ErrorStatus SetDelayTime(uint16_t Delaytime)
 
 void PowerSet(PowerSettingDef pra )
 {
-	//VoltageSetting(2300); //for test; 
+	VoltageSetting(2300); //for test; 
  	if(pra.Status.CVchangeFlag!= 0) 
 		{
 			LOG("Set voltage\r\n");
@@ -347,8 +347,8 @@ void PowerSettingCheck(void)
 	if(PowerFlashSetting.Status.CVchangeFlag         == 0 ||
 		 PowerFlashSetting.Status.CCchangeFLag         == 0 ||
      PowerFlashSetting.Status.DutyChangeFLag       == 0 ||
-		 PowerFlashSetting.Status.FreqencyChangeFLag  == 0 ||
-	   PowerFlashSetting.Status.DelayTimeChangeFLag == 0    ){
+		 PowerFlashSetting.Status.FreqencyChangeFLag   == 0 ||
+	   PowerFlashSetting.Status.DelayTimeChangeFLag  == 0    ){
 		 LOG("Setting no change\r\n");
 		 return;
 		}
@@ -368,15 +368,44 @@ ErrorStatus LoadFlashSetting(PowerSettingDef pra)
 	return SUCCESS;
 }
 
+
+
+extern ADC_HandleTypeDef hadc1;
+extern ADC_HandleTypeDef hadc2;
+extern ADC_HandleTypeDef hadc3;
+
+uint32_t MeasureVoltage(ADC_HandleTypeDef * ADCname)
+{
+	uint32_t temp;	
+	HAL_ADC_Start(ADCname);
+	temp=HAL_ADC_GetValue(ADCname);
+	//HAL_ADC_Stop(ADCname);
+	LOG("ADC2_IN2,POWER_OUT:%f\r\n",(double)temp*66/40950);     //4095*33/10);
+	return temp;
+}
+
+uint32_t MeasureCurrent(ADC_HandleTypeDef *ADCname)
+{
+	uint32_t temp;	
+	HAL_ADC_Start(ADCname);
+	temp=HAL_ADC_GetValue(ADCname);
+	//HAL_ADC_Stop(ADCname);
+	LOG("ADC1_IN1,POWER_OUT_CURRENT:%f\r\n",(double)temp*33/12370);
+	return temp;
+}
+
 void PowerMonitor(void)
 {
 	if(PowerFlashSetting.mode==CV)
 	{
+
+		MeasureVoltage(&hadc2);
+		MeasureCurrent(&hadc1);
 	  
 	}
 	else if(PowerFlashSetting.mode==CC)
 	{
-	  
+	   
 	}
 	else return;  
 }

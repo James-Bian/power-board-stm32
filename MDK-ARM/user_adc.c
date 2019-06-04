@@ -47,6 +47,8 @@ void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
+	
+	HAL_ADCEx_Calibration_Start(&hadc1);
 
 }
 
@@ -92,6 +94,8 @@ void MX_ADC2_Init(void)
   /* USER CODE BEGIN ADC2_Init 2 */
 
   /* USER CODE END ADC2_Init 2 */
+		
+	HAL_ADCEx_Calibration_Start(&hadc2);
 
 }
 
@@ -136,7 +140,12 @@ void MX_ADC3_Init(void)
   }
   /* USER CODE BEGIN ADC3_Init 2 */
 
-  /* USER CODE END ADC3_Init 2 */
+  /* USER CODE END ADC3_Init 2 */	
+
+	HAL_ADCEx_Calibration_Start(&hadc3);
+
 
 }
+
+
 

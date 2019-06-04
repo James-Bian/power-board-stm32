@@ -89,8 +89,8 @@ uint16_t    GetOutputVol(ChanneNameDef ch);
 uint16_t    GetOutputCur(ChanneNameDef ch);
 
 //Measuring
-uint16_t    MeasureVoltage(ADC_HandleTypeDef ADCname);
-uint16_t    MeasureCurrent(ADC_HandleTypeDef ADCname);
+uint32_t    MeasureVoltage(ADC_HandleTypeDef *ADCname);
+uint32_t    MeasureCurrent(ADC_HandleTypeDef *ADCname);
 
 //Calibration
 uint16_t    VoltageCali(ChanneNameDef ch);
