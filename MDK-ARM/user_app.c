@@ -1,5 +1,21 @@
 #include "user_app.h"
 
+uint16_t PowerCmd=0;
+
+PowerSettingDef PowerBasicSetting;
+PowerSettingDef PowerFlashSetting;
+
+PowerSettingDef TriggerOUT1Setting;
+PowerSettingDef TriggerOUT2Setting;
+
+uint32_t FlashSettingData[30]={0,1,2,3,4};
+uint32_t FlashAddress = 0x0803F800;
+
+
+extern DAC_HandleTypeDef hdac;
+#define ADC_FOR_POWER DAC_CHANNEL_2
+#define DAC_FOR_CC DAC_CHANNEL_1
+
 /**
   * @brief System Clock Configuration
   * @retval None
@@ -201,22 +217,13 @@ void assert_failed(uint8_t *file, uint32_t line)
 }
 #endif /* USE_FULL_ASSERT */
 
-uint16_t PowerCmd=0;
 
-PowerSettingDef PowerBasicSetting;
-PowerSettingDef PowerFlashSetting;
-
-uint32_t FlashSettingData[30]={0,1,2,3,4};
-uint32_t FlashAddress = 0x0803F800;
-
-
-extern DAC_HandleTypeDef hdac;
-#define ADC_FOR_POWER DAC_CHANNEL_2
 
 ErrorStatus VoltageSetting(uint32_t Data)
 {
 	uint32_t value;
-	
+	value=Data;
+/*	
 	if(Data<1300){
 		LOG("Unsupport value,to set min value 1300!output is around 5V\r\n");
 		value=1300;	
@@ -231,11 +238,25 @@ ErrorStatus VoltageSetting(uint32_t Data)
 	else {
 		value=Data;
 	}
-	LOG("Set ADC value for power:%d\r\n",value);
+*/
+	//LOG("Set ADC value for power:%d\r\n",value);
 	HAL_DAC_SetValue(&hdac,ADC_FOR_POWER,DAC_ALIGN_12B_R,value); //2370---0.78V,1300-5V,
 	HAL_DAC_Start(&hdac,ADC_FOR_POWER);	
 	return SUCCESS;
 }
+
+
+ErrorStatus CC_VoltageSetting(uint32_t Data)
+{
+	uint32_t value;
+	value=Data;
+	//LOG("Set DAC value for CC mode:%d\r\n",value);
+	HAL_DAC_SetValue(&hdac,DAC_FOR_CC,DAC_ALIGN_12B_R,value); 
+	HAL_DAC_Start(&hdac,DAC_FOR_CC);	
+	return SUCCESS;
+}
+
+
 ErrorStatus CurrentSetting(uint16_t value)
 {
 	return SUCCESS;
@@ -258,7 +279,7 @@ ErrorStatus SetDelayTime(uint16_t Delaytime)
 
 void PowerSet(PowerSettingDef pra )
 {
-	VoltageSetting(2300); //for test; 
+	VoltageSetting(1800); //for test; 
  	if(pra.Status.CVchangeFlag!= 0) 
 		{
 			LOG("Set voltage\r\n");
@@ -380,7 +401,7 @@ uint32_t MeasureVoltage(ADC_HandleTypeDef * ADCname)
 	HAL_ADC_Start(ADCname);
 	temp=HAL_ADC_GetValue(ADCname);
 	//HAL_ADC_Stop(ADCname);
-	LOG("ADC2_IN2,POWER_OUT:%f\r\n",(double)temp*66/40950);     //4095*33/10);
+	//LOG("ADC2_IN2,POWER_OUT:%f\r\n",(double)temp*66/40950);     //4095*33/10);
 	return temp;
 }
 
@@ -389,24 +410,151 @@ uint32_t MeasureCurrent(ADC_HandleTypeDef *ADCname)
 	uint32_t temp;	
 	HAL_ADC_Start(ADCname);
 	temp=HAL_ADC_GetValue(ADCname);
-	//HAL_ADC_Stop(ADCname);
-	LOG("ADC1_IN1,POWER_OUT_CURRENT:%f\r\n",(double)temp*33/12370);
+	////HAL_ADC_Stop(ADCname);
+	//LOG("ADC1_IN1,POWER_OUT_CURRENT:%f\r\n",(double)temp*33/12370);
 	return temp;
 }
 
-void PowerMonitor(void)
+void SetVotageDac(uint16_t reg)
 {
-	if(PowerFlashSetting.mode==CV)
-	{
+ 
+}
 
-		MeasureVoltage(&hadc2);
-		MeasureCurrent(&hadc1);
-	  
+uint32_t DacVaule;
+
+/*void PowerMonitor(void)
+{
+	uint32_t voltage,tmp;
+	uint32_t current;
+	if(PowerFlashSetting.mode==CV)
+	{	  
+		voltage=(double)MeasureVoltage(&hadc2)*6600/4095;                             //DAC:2370--0.7V ,1300=5V;
+		tmp=((voltage/1000)<<12)+(((voltage%1000)/100)<<8)+((voltage%100)/10<<4)+(voltage%10);
+		LOG("CV mode Voltage:%x\r\n",tmp);
+		if(tmp<PowerFlashSetting.voltage){
+			VoltageSetting(DacVaule--);
+			HAL_Delay(10);
+			}
+		else{
+			VoltageSetting(DacVaule++);
+HAL_Delay(10);			
+			} 			
 	}
 	else if(PowerFlashSetting.mode==CC)
 	{
-	   
+				
+	  current=(double)MeasureCurrent(&hadc1)*3300/1237; 
+		tmp=((current/1000)<<12)+(((current%1000)/100)<<8)+((current%100)/10<<4)+(current%10);
+    LOG("CC mode current:%x\r\n",tmp);
+		if(tmp<PowerFlashSetting.Current){
+			if(DacVaule<=2370){
+		  VoltageSetting(DacVaule--);
+			}	
+		}
+		else{
+			VoltageSetting(DacVaule++);
+		}
+		if(DacVaule>2370){
+		DacVaule=2370;
+		}
+				if(DacVaule<1300){
+		DacVaule=1300;
+		}		
 	}
 	else return;  
+}
+*/
+
+void PowerMonitor(void)
+{
+	uint64_t voltage,tmp;
+	uint32_t current;
+	if(PowerFlashSetting.mode==CV)
+	{	  
+		voltage=(double)MeasureVoltage(&hadc2)*6600/4095;                             //DAC:2370--0.7V ,1300=5V;
+		tmp=((voltage/1000)<<12)+(((voltage%1000)/100)<<8)+((voltage%100)/10<<4)+(voltage%10);
+		LOG("CV mode Voltage:%x\r\n",(unsigned int)tmp);
+		tmp=PowerFlashSetting.voltage*3300/4095;
+		LOG("CV DAC:%d\r\n",(unsigned int)PowerFlashSetting.voltage);
+    VoltageSetting(tmp);			
+	}
+	else if(PowerFlashSetting.mode==CC)
+	{				
+	  current=(double)MeasureCurrent(&hadc1)*330000/123669; 
+		tmp=((current/1000)<<12)+(((current%1000)/100)<<8)+((current%100)/10<<4)+(current%10);
+    LOG("CC mode current measure:%x\r\n",(unsigned int)tmp);
+		tmp=PowerFlashSetting.Current*123669/330000;
+		LOG("set current:%d\r\n",PowerFlashSetting.Current);
+		LOG("set CC DAC:%d\r\n",(unsigned int)tmp);
+    CC_VoltageSetting(tmp);	
+	}
+	else return;  
+}
+
+void TriggerSettingCheck(void)
+{
+	if(TriggerOUT1Setting.Status.DutyChangeFLag!=0     ||
+		 TriggerOUT1Setting.Status.FreqencyChangeFLag!=0 ||
+		 TriggerOUT1Setting.Status.DelayTimeChangeFLag!=0  ){
+		 TriggerSetting(TriggerOUT1Setting.Duty,TriggerOUT1Setting.Frequency,TriggerOUT1Setting.DelayTime);	
+		 SaveSettingToFlash(TriggerOUT1Setting);		 
+		 }
+	if(TriggerOUT2Setting.Status.DutyChangeFLag!=0     ||
+		 TriggerOUT2Setting.Status.FreqencyChangeFLag!=0 ||
+		 TriggerOUT2Setting.Status.DelayTimeChangeFLag!=0  ){
+		 TriggerSetting(TriggerOUT2Setting.Duty,TriggerOUT2Setting.Frequency,TriggerOUT2Setting.DelayTime);
+		 SaveSettingToFlash(TriggerOUT2Setting);
+		 }
+	return;
+}
+
+void TriggerSetting(uint32_t Duty,uint32_t Frequency,uint32_t Delaytime)
+{
+      
+}
+
+void KeyProcess(void)
+{
+  if(CV_KEY_LEVEL==0)		
+	{
+		PowerFlashSetting.mode=CV;
+		CC_VoltageSetting(0xFFFF);
+	}
+	  if(CC_KEY_LEVEL==0)		
+	{
+		PowerFlashSetting.mode=CC;
+		VoltageSetting(0xFFFF);
+	}
+	if(PowerFlashSetting.mode==CV&&KEY_N_LEVEL==0&&PowerFlashSetting.voltage>0x0000)
+	{
+		while(!KEY_N_LEVEL);
+		PowerFlashSetting.voltage--;
+		//if(PowerFlashSetting.voltage==0x0800)
+	  //PowerFlashSetting.voltage=0x0800;	
+	}
+	if(PowerFlashSetting.mode==CV&&KEY_P_LEVEL==0&&PowerFlashSetting.voltage<0x5100)
+	{
+		HAL_Delay(1);
+		while(!KEY_P_LEVEL);
+		PowerFlashSetting.voltage++;	
+		//if(PowerFlashSetting.voltage==5000)
+	  //PowerFlashSetting.voltage=0x4FFF;	
+	}
+		if(PowerFlashSetting.mode==CC&&KEY_N_LEVEL==0)
+	{
+		HAL_Delay(1);
+		while(!KEY_N_LEVEL);
+		PowerFlashSetting.Current--;
+		//if(PowerFlashSetting.Current==0x0080)
+		//PowerFlashSetting.Current=0x0081;
+	}
+	if(PowerFlashSetting.mode==CC&&KEY_P_LEVEL==0)
+	{
+		HAL_Delay(1);
+		while(!KEY_P_LEVEL);
+		PowerFlashSetting.Current++;	
+		//if(PowerFlashSetting.Current==0xA100)
+		//PowerFlashSetting.Current=0xA0FF;
+	}
 }
 

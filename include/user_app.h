@@ -8,6 +8,7 @@
 #include "user_time.h"
 #include "stm32f1xx_hal_flash_ex.h"
 #include "stm32f1xx_hal_flash.h"
+#include "user_RS485.h"
 
 
 /* Private function prototypes -----------------------------------------------*/
@@ -25,6 +26,11 @@ void MX_I2C1_Init(void);
 #define PowerCh     DAC_CHANNEL_1
 #define TiggerOUT1  xxxxx
 #define TiggerOUT2  xxxxxx
+
+#define CV_KEY_LEVEL HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_7)
+#define CC_KEY_LEVEL HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_4)
+#define KEY_N_LEVEL HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_5)
+#define KEY_P_LEVEL HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0)
 
 typedef enum 
 {
@@ -66,13 +72,13 @@ typedef struct
 {
 	ChanneNameDef OutputChannel;
 	WorkMode mode;
-	uint16_t voltage;
-	uint16_t Current;
-	uint16_t Duty;
-	uint16_t Frequency;
-	uint16_t DelayTime;
-	uint16_t OP1offset;
-	uint16_t OP2offset;
+	uint32_t voltage;           //2370--0.7V ,1300=5V;
+	uint32_t Current;           //65535,0xFFFF,
+	uint32_t Duty;
+	uint32_t Frequency;
+	uint32_t DelayTime;
+	uint32_t OP1offset;
+	uint32_t OP2offset;
 	Statusdef Status;
 }PowerSettingDef;
 
@@ -113,5 +119,11 @@ uint8_t SaveSettingToFlash(PowerSettingDef pra);
 void PowerSettingCheck(void);
 ErrorStatus LoadFlashSetting(PowerSettingDef pra);
 void PowerMonitor(void);
+
+void TriggerSettingCheck(void);
+void TriggerSetting(uint32_t Duty,uint32_t Frequency,uint32_t Delaytime);
+
+void KeyProcess(void);
+ErrorStatus CC_VoltageSetting(uint32_t Data);
 
 #endif
