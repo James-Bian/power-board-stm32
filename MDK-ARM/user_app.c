@@ -11,6 +11,9 @@ PowerSettingDef TriggerOUT2Setting;
 uint32_t FlashSettingData[30]={0,1,2,3,4};
 uint32_t FlashAddress = 0x0803F800;
 
+uint16_t CC_OP_Calibration_Value;
+uint16_t CV_OP_Calibration_Value;
+
 
 extern DAC_HandleTypeDef hdac;
 #define ADC_FOR_POWER DAC_CHANNEL_2
@@ -464,11 +467,13 @@ HAL_Delay(10);
 	else return;  
 }
 */
+uint32_t CCDAC;
 
 void PowerMonitor(void)
 {
-	uint64_t voltage,tmp;
-	uint32_t current;
+	uint32_t voltage;
+	uint32_t tmp;
+	float current;
 	if(PowerFlashSetting.mode==CV)
 	{	  
 		voltage=(double)MeasureVoltage(&hadc2)*6600/4095;                             //DAC:2370--0.7V ,1300=5V;
@@ -480,13 +485,27 @@ void PowerMonitor(void)
 	}
 	else if(PowerFlashSetting.mode==CC)
 	{				
-	  current=(double)MeasureCurrent(&hadc1)*330000/123669; 
-		tmp=((current/1000)<<12)+(((current%1000)/100)<<8)+((current%100)/10<<4)+(current%10);
-    LOG("CC mode current measure:%x\r\n",(unsigned int)tmp);
-		tmp=PowerFlashSetting.Current*123669/330000;
+	  //measure output voltage
+		voltage=(double)MeasureVoltage(&hadc2)*6600/4095;                 
+		LOG("CC output Voltage:%d\r\n",voltage); 
+    LOG("CC output SET mA:%d\r\n",PowerFlashSetting.Current); 		
+    
+		if(PowerFlashSetting.Status.CCchangeFLag==1)
+		{
+    //Read Current setting and set DAC for CC mode;		
+		CCDAC=(PowerFlashSetting.Current*819)/220;//+819/66;
 		LOG("set current:%d\r\n",PowerFlashSetting.Current);
-		LOG("set CC DAC:%d\r\n",(unsigned int)tmp);
-    CC_VoltageSetting(tmp);	
+		LOG("set CC DAC:%d\r\n",CCDAC);
+		CC_VoltageSetting(CCDAC);
+
+			
+		PowerFlashSetting.Status.CCchangeFLag=0;
+		}
+		
+    //Measure current after setting
+		current=(float)((MeasureCurrent(&hadc1))*220)/819; 
+    LOG("CC mode current measure:%f\r\n",current);
+   	LOG("CC DAC:%d\r\n",CCDAC);		
 	}
 	else return;  
 }
@@ -515,6 +534,7 @@ void TriggerSetting(uint32_t Duty,uint32_t Frequency,uint32_t Delaytime)
 
 void KeyProcess(void)
 {
+	DAC_ChannelConfTypeDef sConfig = {0};
   if(CV_KEY_LEVEL==0)		
 	{
 		PowerFlashSetting.mode=CV;
@@ -544,17 +564,31 @@ void KeyProcess(void)
 	{
 		HAL_Delay(1);
 		while(!KEY_N_LEVEL);
+		if(PowerFlashSetting.Current>0){
 		PowerFlashSetting.Current--;
-		//if(PowerFlashSetting.Current==0x0080)
-		//PowerFlashSetting.Current=0x0081;
+		if(PowerFlashSetting.Current<=20){
+		sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_DISABLE;
+		}
+		}
+		PowerFlashSetting.Status.CCchangeFLag=1;
+
 	}
 	if(PowerFlashSetting.mode==CC&&KEY_P_LEVEL==0)
 	{
 		HAL_Delay(1);
 		while(!KEY_P_LEVEL);
-		PowerFlashSetting.Current++;	
-		//if(PowerFlashSetting.Current==0xA100)
-		//PowerFlashSetting.Current=0xA0FF;
+		if(PowerFlashSetting.Current<10000){
+		PowerFlashSetting.Current++;
+		}
+    PowerFlashSetting.Status.CCchangeFLag=1;		
 	}
 }
+
+void CC_OP_calibration(void)
+{
+	CC_OP_Calibration_Value=MeasureVoltage(&hadc1);
+  	
+	LOG("CC_OP_Calibration_Value:%d\r\n",CC_OP_Calibration_Value);	
+}
+
 

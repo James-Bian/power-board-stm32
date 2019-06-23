@@ -14,6 +14,7 @@
 /* Private function prototypes -----------------------------------------------*/
 
 #define LOG printf
+#define LOGon printf
 
 
 extern I2C_HandleTypeDef hi2c1;
@@ -125,5 +126,7 @@ void TriggerSetting(uint32_t Duty,uint32_t Frequency,uint32_t Delaytime);
 
 void KeyProcess(void);
 ErrorStatus CC_VoltageSetting(uint32_t Data);
+void CC_OP_calibration(void);
 
 #endif
+
